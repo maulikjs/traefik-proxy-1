@@ -265,7 +265,7 @@ class TraefikTomlConfigmapProxy(TraefikProxy):
         try:
             for pod_ip in pod_ips:
                 self.log.debug("checking traefik pod: %s", pod_ip)
-                await self._wait_for_route_in_single_traefik_pod(routespec, pod_ip)
+                self._wait_for_route_in_single_traefik_pod(routespec, pod_ip)
                 self.log.debug("successfully checked traefik pod: %s", pod_ip)
             self.log.debug("successfully checked all traefik pods")
         except HTTPError:
@@ -287,7 +287,7 @@ class TraefikTomlConfigmapProxy(TraefikProxy):
                 pod_ips.append(address.ip)
         return pod_ips
 
-    async def _wait_for_route_in_single_traefik_pod(self, routespec, pod_ip):
+    def _wait_for_route_in_single_traefik_pod(self, routespec, pod_ip):
         self.log.info("Waiting for %s to register with traefik pod %s", routespec, pod_ip)
 
         async def _check_traefik_dynamic_conf_ready_in_pod():
@@ -303,7 +303,7 @@ class TraefikTomlConfigmapProxy(TraefikProxy):
 
             return True
 
-        await exponential_backoff(
+        exponential_backoff(
             _check_traefik_dynamic_conf_ready_in_pod,
             "Traefik route for {} configuration not available in pod {}".format(routespec, pod_ip),
             timeout=self.check_route_timeout,
